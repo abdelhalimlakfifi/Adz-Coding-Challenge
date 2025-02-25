@@ -27183,51 +27183,132 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   emits: ['close', 'product-created'],
   setup: function setup(props, _ref) {
     var emit = _ref.emit;
+    var categories = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
     var form = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)({
       name: '',
       price: '',
-      category: '',
-      description: ''
+      categories: [],
+      description: '',
+      image: null
+    });
+    var errors = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)({
+      name: '',
+      price: '',
+      categories: ''
+    });
+    var fetchCategories = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+        var response;
+        return _regeneratorRuntime().wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              _context.prev = 0;
+              _context.next = 3;
+              return fetch('/api/v1/categories');
+            case 3:
+              response = _context.sent;
+              if (response.ok) {
+                _context.next = 6;
+                break;
+              }
+              throw new Error("HTTP error! status: ".concat(response.status));
+            case 6:
+              _context.next = 8;
+              return response.json();
+            case 8:
+              categories.value = _context.sent;
+              _context.next = 14;
+              break;
+            case 11:
+              _context.prev = 11;
+              _context.t0 = _context["catch"](0);
+              console.error('Error fetching categories:', _context.t0);
+            case 14:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee, null, [[0, 11]]);
+      }));
+      return function fetchCategories() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(function () {
+      fetchCategories();
     });
     var close = function close() {
       emit('close');
     };
+    var handleImageChange = function handleImageChange(event) {
+      form.value.image = event.target.files[0];
+    };
+    var validateForm = function validateForm() {
+      var isValid = true;
+      errors.value = {
+        name: '',
+        price: '',
+        categories: ''
+      };
+      if (!form.value.name.trim()) {
+        errors.value.name = 'Product name is required';
+        isValid = false;
+      }
+      if (!form.value.price || form.value.price <= 0) {
+        errors.value.price = 'Valid price is required';
+        isValid = false;
+      }
+      if (!form.value.categories.length) {
+        errors.value.categories = 'At least one category must be selected';
+        isValid = false;
+      }
+      return isValid;
+    };
     var handleSubmit = /*#__PURE__*/function () {
-      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var response, data;
-        return _regeneratorRuntime().wrap(function _callee$(_context) {
-          while (1) switch (_context.prev = _context.next) {
+      var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        var formData, response, data;
+        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
             case 0:
-              console.log(form.value);
-              _context.prev = 1;
-              if (!(!form.value.name || !form.value.price)) {
-                _context.next = 5;
+              _context2.prev = 0;
+              if (validateForm()) {
+                _context2.next = 3;
                 break;
               }
-              console.error('Required fields are missing');
-              return _context.abrupt("return");
-            case 5:
-              _context.next = 7;
+              return _context2.abrupt("return");
+            case 3:
+              // Create FormData object
+              formData = new FormData();
+              formData.append('name', form.value.name);
+              formData.append('price', form.value.price);
+              formData.append('description', form.value.description);
+              if (form.value.image) {
+                formData.append('image', form.value.image);
+              }
+              form.value.categories.forEach(function (categoryId) {
+                formData.append('categories[]', categoryId);
+              });
+
+              // Make the API call
+              _context2.next = 11;
               return fetch('/api/v1/products', {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json',
                   'Accept': 'application/json'
                 },
-                body: JSON.stringify(form.value)
+                body: formData
               });
-            case 7:
-              response = _context.sent;
+            case 11:
+              response = _context2.sent;
               if (response.ok) {
-                _context.next = 10;
+                _context2.next = 14;
                 break;
               }
               throw new Error("HTTP error! status: ".concat(response.status));
-            case 10:
-              _context.next = 12;
+            case 14:
+              _context2.next = 16;
               return response.json();
-            case 12:
-              data = _context.sent;
+            case 16:
+              data = _context2.sent;
               // Emit the created product
               emit('product-created', data);
 
@@ -27235,33 +27316,37 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               form.value = {
                 name: '',
                 price: '',
-                category: '',
-                description: ''
+                categories: [],
+                description: '',
+                image: null
               };
 
               // Close the sidebar
               close();
-              _context.next = 21;
+              _context2.next = 25;
               break;
-            case 18:
-              _context.prev = 18;
-              _context.t0 = _context["catch"](1);
-              console.error('Error creating product:', _context.t0);
+            case 22:
+              _context2.prev = 22;
+              _context2.t0 = _context2["catch"](0);
+              console.error('Error creating product:', _context2.t0);
               // Here you might want to add error handling UI feedback
-            case 21:
+            case 25:
             case "end":
-              return _context.stop();
+              return _context2.stop();
           }
-        }, _callee, null, [[1, 18]]);
+        }, _callee2, null, [[0, 22]]);
       }));
       return function handleSubmit() {
-        return _ref2.apply(this, arguments);
+        return _ref3.apply(this, arguments);
       };
     }();
     return {
       form: form,
+      categories: categories,
+      errors: errors,
       close: close,
-      handleSubmit: handleSubmit
+      handleSubmit: handleSubmit,
+      handleImageChange: handleImageChange
     };
   }
 });
@@ -27408,12 +27493,28 @@ var _hoisted_4 = {
   "class": "form-group"
 };
 var _hoisted_5 = {
-  "class": "form-group"
+  key: 0,
+  "class": "error-message"
 };
 var _hoisted_6 = {
   "class": "form-group"
 };
 var _hoisted_7 = {
+  key: 0,
+  "class": "error-message"
+};
+var _hoisted_8 = {
+  "class": "form-group"
+};
+var _hoisted_9 = ["value"];
+var _hoisted_10 = {
+  key: 0,
+  "class": "error-message"
+};
+var _hoisted_11 = {
+  "class": "form-group"
+};
+var _hoisted_12 = {
   "class": "form-group"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -27424,46 +27525,61 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return [$props.isOpen ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
         key: 0,
         "class": "sidebar-overlay",
-        onClick: _cache[6] || (_cache[6] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
+        onClick: _cache[7] || (_cache[7] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
           return $setup.close && $setup.close.apply($setup, arguments);
         }, ["self"]))
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [_cache[7] || (_cache[7] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", null, "Add New Product", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [_cache[8] || (_cache[8] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", null, "Add New Product", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         "class": "close-button",
         onClick: _cache[0] || (_cache[0] = function () {
           return $setup.close && $setup.close.apply($setup, arguments);
         })
       }, "×")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("form", {
-        onSubmit: _cache[5] || (_cache[5] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
+        onSubmit: _cache[6] || (_cache[6] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
           return $setup.handleSubmit && $setup.handleSubmit.apply($setup, arguments);
         }, ["prevent"]))
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [_cache[8] || (_cache[8] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [_cache[9] || (_cache[9] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
         "for": "name"
-      }, "Product Name", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, "Product Name *", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "text",
         id: "name",
         "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
           return $setup.form.name = $event;
         }),
-        required: ""
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.name]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, [_cache[9] || (_cache[9] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+        required: "",
+        "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
+          'error': $setup.errors.name
+        })
+      }, null, 2 /* CLASS */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.name]]), $setup.errors.name ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errors.name), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [_cache[10] || (_cache[10] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
         "for": "price"
-      }, "Price", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, "Price *", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "number",
         id: "price",
         "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
           return $setup.form.price = $event;
         }),
         step: "0.01",
-        required: ""
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.price]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [_cache[10] || (_cache[10] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+        required: "",
+        "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
+          'error': $setup.errors.price
+        })
+      }, null, 2 /* CLASS */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.price]]), $setup.errors.price ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_7, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errors.price), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [_cache[11] || (_cache[11] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
         "for": "category"
-      }, "Category", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-        type: "text",
+      }, "Categories *", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
         id: "category",
         "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
-          return $setup.form.category = $event;
-        })
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.category]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [_cache[11] || (_cache[11] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+          return $setup.form.categories = $event;
+        }),
+        multiple: "",
+        "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["multiselect", {
+          'error': $setup.errors.categories
+        }]),
+        required: ""
+      }, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.categories, function (category) {
+        return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("option", {
+          key: category.id,
+          value: category.id
+        }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(category.name), 9 /* TEXT, PROPS */, _hoisted_9);
+      }), 128 /* KEYED_FRAGMENT */))], 2 /* CLASS */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $setup.form.categories]]), $setup.errors.categories ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errors.categories), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [_cache[12] || (_cache[12] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
         "for": "description"
       }, "Description", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
         id: "description",
@@ -27471,7 +27587,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return $setup.form.description = $event;
         }),
         rows: "4"
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.description]])]), _cache[12] || (_cache[12] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.description]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [_cache[13] || (_cache[13] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+        "for": "image"
+      }, "Product Image", -1 /* HOISTED */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+        type: "file",
+        id: "image",
+        onChange: _cache[5] || (_cache[5] = function () {
+          return $setup.handleImageChange && $setup.handleImageChange.apply($setup, arguments);
+        }),
+        accept: "image/*",
+        "class": "file-input"
+      }, null, 32 /* NEED_HYDRATION */)]), _cache[14] || (_cache[14] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         type: "submit",
         "class": "submit-button"
       }, "Create Product", -1 /* HOISTED */))], 32 /* NEED_HYDRATION */)])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
@@ -27592,7 +27718,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.sidebar-overlay[data-v-6946c3f4] {\n    position: fixed;\n    top: 0;\n    right: 0;\n    bottom: 0;\n    left: 0;\n    background-color: rgba(15, 23, 42, 0.3);  /* Modern semi-transparent overlay */\n    -webkit-backdrop-filter: blur(4px);\n            backdrop-filter: blur(4px);  /* Modern blur effect */\n    display: flex;\n    justify-content: flex-end;\n    z-index: 1000;\n}\n.sidebar[data-v-6946c3f4] {\n    width: 400px;\n    background-color: #ffffff;\n    height: 100%;\n    padding: 2rem;\n    box-shadow: -8px 0 25px -10px rgba(0, 0, 0, 0.15);  /* Softer, modern shadow */\n}\n.sidebar-header[data-v-6946c3f4] {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 2rem;\n}\n.sidebar-header h2[data-v-6946c3f4] {\n    font-weight: 600;\n    color: #0f172a;  /* Modern slate color */\n}\n.close-button[data-v-6946c3f4] {\n    background: none;\n    border: none;\n    font-size: 1.5rem;\n    cursor: pointer;\n    color: #64748b;  /* Modern slate gray */\n    transition: color 0.2s ease;\n}\n.close-button[data-v-6946c3f4]:hover {\n    color: #0f172a;\n}\n.form-group[data-v-6946c3f4] {\n    margin-bottom: 1.5rem;\n}\n.form-group label[data-v-6946c3f4] {\n    display: block;\n    margin-bottom: 0.5rem;\n    color: #334155;  /* Modern slate */\n    font-weight: 500;\n    font-size: 0.875rem;\n}\n.form-group input[data-v-6946c3f4],\n.form-group textarea[data-v-6946c3f4] {\n    width: 100%;\n    padding: 0.625rem;\n    border: 1px solid #e2e8f0;  /* Modern border color */\n    border-radius: 0.5rem;\n    background-color: #f8fafc;  /* Light background */\n    transition: all 0.2s ease;\n}\n.form-group input[data-v-6946c3f4]:focus,\n.form-group textarea[data-v-6946c3f4]:focus {\n    outline: none;\n    border-color: #3b82f6;  /* Modern blue */\n    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);  /* Subtle focus ring */\n    background-color: #ffffff;\n}\n.submit-button[data-v-6946c3f4] {\n    width: 100%;\n    padding: 0.75rem;\n    background-color: #3b82f6;  /* Modern blue */\n    color: white;\n    border: none;\n    border-radius: 0.5rem;\n    cursor: pointer;\n    font-size: 0.875rem;\n    font-weight: 500;\n    transition: all 0.2s ease;\n}\n.submit-button[data-v-6946c3f4]:hover {\n    background-color: #2563eb;  /* Darker blue on hover */\n    transform: translateY(-1px);  /* Subtle lift effect */\n}\n.submit-button[data-v-6946c3f4]:active {\n    transform: translateY(0);\n}\n\n/* Animation styles */\n.sidebar-enter-active[data-v-6946c3f4],\n.sidebar-leave-active[data-v-6946c3f4] {\n    transition: opacity 0.3s ease;\n}\n.sidebar-enter-active .sidebar[data-v-6946c3f4],\n.sidebar-leave-active .sidebar[data-v-6946c3f4] {\n    transition: transform 0.3s ease;\n}\n.sidebar-enter-from[data-v-6946c3f4],\n.sidebar-leave-to[data-v-6946c3f4] {\n    opacity: 0;\n}\n.sidebar-enter-from .sidebar[data-v-6946c3f4],\n.sidebar-leave-to .sidebar[data-v-6946c3f4] {\n    transform: translateX(100%);\n}\n.sidebar-enter-to[data-v-6946c3f4],\n.sidebar-leave-from[data-v-6946c3f4] {\n    opacity: 1;\n}\n.sidebar-enter-to .sidebar[data-v-6946c3f4],\n.sidebar-leave-from .sidebar[data-v-6946c3f4] {\n    transform: translateX(0);\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.sidebar-overlay[data-v-6946c3f4] {\n    position: fixed;\n    top: 0;\n    right: 0;\n    bottom: 0;\n    left: 0;\n    background-color: rgba(15, 23, 42, 0.3);  /* Modern semi-transparent overlay */\n    -webkit-backdrop-filter: blur(4px);\n            backdrop-filter: blur(4px);  /* Modern blur effect */\n    display: flex;\n    justify-content: flex-end;\n    z-index: 1000;\n}\n.sidebar[data-v-6946c3f4] {\n    width: 400px;\n    background-color: #ffffff;\n    height: 100%;\n    padding: 2rem;\n    box-shadow: -8px 0 25px -10px rgba(0, 0, 0, 0.15);  /* Softer, modern shadow */\n}\n.sidebar-header[data-v-6946c3f4] {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 2rem;\n}\n.sidebar-header h2[data-v-6946c3f4] {\n    font-weight: 600;\n    color: #0f172a;  /* Modern slate color */\n}\n.close-button[data-v-6946c3f4] {\n    background: none;\n    border: none;\n    font-size: 1.5rem;\n    cursor: pointer;\n    color: #64748b;  /* Modern slate gray */\n    transition: color 0.2s ease;\n}\n.close-button[data-v-6946c3f4]:hover {\n    color: #0f172a;\n}\n.form-group[data-v-6946c3f4] {\n    margin-bottom: 1.5rem;\n}\n.form-group label[data-v-6946c3f4] {\n    display: block;\n    margin-bottom: 0.5rem;\n    color: #334155;  /* Modern slate */\n    font-weight: 500;\n    font-size: 0.875rem;\n}\n.form-group label[data-v-6946c3f4]::after {\n    content: \" *\";\n    color: #ef4444;\n}\n.form-group input[data-v-6946c3f4],\n.form-group textarea[data-v-6946c3f4] {\n    width: 100%;\n    padding: 0.625rem;\n    border: 1px solid #e2e8f0;  /* Modern border color */\n    border-radius: 0.5rem;\n    background-color: #f8fafc;  /* Light background */\n    transition: all 0.2s ease;\n}\n.form-group input[data-v-6946c3f4]:focus,\n.form-group textarea[data-v-6946c3f4]:focus {\n    outline: none;\n    border-color: #3b82f6;  /* Modern blue */\n    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);  /* Subtle focus ring */\n    background-color: #ffffff;\n}\n.submit-button[data-v-6946c3f4] {\n    width: 100%;\n    padding: 0.75rem;\n    background-color: #3b82f6;  /* Modern blue */\n    color: white;\n    border: none;\n    border-radius: 0.5rem;\n    cursor: pointer;\n    font-size: 0.875rem;\n    font-weight: 500;\n    transition: all 0.2s ease;\n}\n.submit-button[data-v-6946c3f4]:hover {\n    background-color: #2563eb;  /* Darker blue on hover */\n    transform: translateY(-1px);  /* Subtle lift effect */\n}\n.submit-button[data-v-6946c3f4]:active {\n    transform: translateY(0);\n}\n\n/* Animation styles */\n.sidebar-enter-active[data-v-6946c3f4],\n.sidebar-leave-active[data-v-6946c3f4] {\n    transition: opacity 0.3s ease;\n}\n.sidebar-enter-active .sidebar[data-v-6946c3f4],\n.sidebar-leave-active .sidebar[data-v-6946c3f4] {\n    transition: transform 0.3s ease;\n}\n.sidebar-enter-from[data-v-6946c3f4],\n.sidebar-leave-to[data-v-6946c3f4] {\n    opacity: 0;\n}\n.sidebar-enter-from .sidebar[data-v-6946c3f4],\n.sidebar-leave-to .sidebar[data-v-6946c3f4] {\n    transform: translateX(100%);\n}\n.sidebar-enter-to[data-v-6946c3f4],\n.sidebar-leave-from[data-v-6946c3f4] {\n    opacity: 1;\n}\n.sidebar-enter-to .sidebar[data-v-6946c3f4],\n.sidebar-leave-from .sidebar[data-v-6946c3f4] {\n    transform: translateX(0);\n}\n.multiselect[data-v-6946c3f4] {\n    min-height: 100px;\n    background-color: #f8fafc;\n    border: 1px solid #e2e8f0;\n    border-radius: 0.5rem;\n    padding: 0.5rem;\n    width: 100%;\n}\n.multiselect[data-v-6946c3f4]:focus {\n    outline: none;\n    border-color: #3b82f6;\n    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);\n    background-color: #ffffff;\n}\n.multiselect option[data-v-6946c3f4] {\n    padding: 0.5rem;\n    margin: 0.25rem 0;\n}\n.file-input[data-v-6946c3f4] {\n    width: 100%;\n    padding: 0.625rem;\n    border: 1px solid #e2e8f0;\n    border-radius: 0.5rem;\n    background-color: #f8fafc;\n    transition: all 0.2s ease;\n}\n.file-input[data-v-6946c3f4]:focus {\n    outline: none;\n    border-color: #3b82f6;\n    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);\n    background-color: #ffffff;\n}\n.error[data-v-6946c3f4] {\n    border-color: #ef4444 !important;\n    background-color: #fef2f2 !important;\n}\n.error[data-v-6946c3f4]:focus {\n    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;\n}\n.error-message[data-v-6946c3f4] {\n    color: #ef4444;\n    font-size: 0.75rem;\n    margin-top: 0.25rem;\n    display: block;\n}\n\n/* Remove asterisk for optional fields */\n.form-group label[for=\"description\"][data-v-6946c3f4]::after,\n.form-group label[for=\"image\"][data-v-6946c3f4]::after {\n    content: none;\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

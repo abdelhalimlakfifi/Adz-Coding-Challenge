@@ -14,7 +14,7 @@ class ProductRepository
     
     public function all(): Collection
     {
-        return Product::with('categories')->get();
+        return Product::get();
     }
 
     public function findById(int $id): Product
@@ -37,13 +37,7 @@ class ProductRepository
 
     public function getAllWithFilters(array $filters = []): Collection
     {
-        $query = Product::with('categories');
-        
-        if (isset($filters['category'])) {
-            $query->whereHas('categories', function($q) use ($filters) {
-                $q->where('categories.id', $filters['category']);
-            });
-        }
+        $query = Product::query();
         
         if (isset($filters['sort_price'])) {
             $query->orderBy('price', $filters['sort_price']);
@@ -52,8 +46,4 @@ class ProductRepository
         return $query->get();
     }
 
-    public function query()
-    {
-        return Product::with('categories')->newQuery();
-    }
 }

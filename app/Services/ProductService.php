@@ -19,7 +19,15 @@ class ProductService
 
     public function getAllWithFilters(array $filters): Collection
     {
-        return $this->productRepository->getAllWithFilters($filters);
+        $products = $this->productRepository->getAllWithFilters($filters);
+        
+        if (isset($filters['category'])) {
+            $products = $products->filter(function ($product) use ($filters) {
+                return $product->categories->contains('id', $filters['category']);
+            });
+        }
+        // Eager load categories after fetching products
+        return $products->load('categories');
     }
 
     public function createProduct(array $data): Product

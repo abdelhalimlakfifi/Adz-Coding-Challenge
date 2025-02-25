@@ -3,49 +3,42 @@
 namespace App\Repositories;
 
 use App\Models\Product;
-
+use Illuminate\Database\Eloquent\Collection;
 class ProductRepository
 {
-    // Create a Product
-    public function create(array $data)
+    public function create(array $data): Product
     {
         $product = Product::create($data);
         return $product;
     }
     
-    // Get all Products
-    public function all()
+    public function all(): Collection
     {
         return Product::with('categories')->get();
     }
 
-    // Find a Product by ID
-    public function findById($id)
+    public function findById(int $id): Product
     {
         return Product::findOrFail($id);
     }
     
-    // Update a Product
-    public function update($id, array $data)
+    public function update(int $id, array $data): Product
     {
         $product = Product::findOrFail($id);
         $product->update($data);
         return $product;
     }
     
-    // Delete a Product
-    public function delete($id)
+    public function delete(int $id): void
     {
         $product = Product::findOrFail($id);
         $product->delete();
     }
 
-    // Get all Products with filters
-    public function getAllWithFilters(array $filters = [])
+    public function getAllWithFilters(array $filters = []): Collection
     {
         $query = Product::with('categories');
         
-        // Apply filters if provided
         if (isset($filters['category'])) {
             $query->whereHas('categories', function($q) use ($filters) {
                 $q->where('categories.id', $filters['category']);

@@ -15,7 +15,7 @@ class CategoryRepository
     // Get all Categories
     public function all()
     {
-        return Category::all();
+        return Category::with('parent')->get();
     }
 
     // Find a Category by ID

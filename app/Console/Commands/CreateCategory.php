@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Repositories\CategoryRepository;
 
 class CreateCategory extends Command
 {
@@ -11,23 +12,25 @@ class CreateCategory extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $categoryRepo;
+    protected $signature = 'category:create {name} {--parent=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Create a new category';
 
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(CategoryRepository $categoryRepo)
     {
         parent::__construct();
+        $this->categoryRepo = $categoryRepo;
     }
 
     /**
@@ -35,8 +38,25 @@ class CreateCategory extends Command
      *
      * @return int
      */
+    
     public function handle()
     {
+        $name = $this->argument('name');
+        $parentId = $this->option('parent');
+
+        $categoryData = [
+            'name' => $name,
+            'parent_id' => $parentId
+        ];
+
+        $category = $this->categoryRepo->create($categoryData);
+        
+        if (!is_object($category)) {
+            $this->error('Failed to create category');
+            return 1;
+        }
+
+        $this->info("Category '{$category->name}' created successfully.");
         return 0;
     }
 }

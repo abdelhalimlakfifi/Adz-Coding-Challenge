@@ -7,16 +7,23 @@
             </button>
         </div>
         <div class="filters-container">
-            <select class="filter-select">
-                <option value="">Filter by Category</option>
+            <select class="filter-select" v-model="selectedCategory">
+                <option value="">All Categories</option>
+                <option v-for="category in categories" 
+                        :key="category.id" 
+                        :value="category.id">
+                    {{ category.name }}
+                </option>
             </select>
-            <select class="filter-select">
+            <select class="filter-select" v-model="sortBy">
                 <option value="">Sort by Price</option>
+                <option value="low">Price: Low to High</option>
+                <option value="high">Price: High to Low</option>
             </select>
         </div>
         <div class="products-grid">
             <ProductCard 
-                v-for="product in products" 
+                v-for="product in filteredAndSortedProducts" 
                 :key="product.id" 
                 :product="product" 
             />
@@ -30,7 +37,7 @@
 </template>
 
 <script>
-    import { onMounted, ref } from 'vue';
+    import { onMounted, ref, computed } from 'vue';
     import ProductCard from '../components/ProductCard.vue';
     import CreateProductSidebar from '../components/CreateProductSidebar.vue';
 
@@ -43,6 +50,38 @@
         setup() {
             const products = ref([]);
             const isSidebarOpen = ref(false);
+            const selectedCategory = ref('');
+            const sortBy = ref('');
+            const categories = ref([]);
+
+            const filteredAndSortedProducts = computed(() => {
+                let filtered = [...products.value];
+                
+                // Apply category filter
+                if (selectedCategory.value) {
+                    filtered = filtered.filter(product => {
+                        // console.log(JSON.stringify(product.categories));
+                        const obj = JSON.parse(JSON.stringify(product.categories));
+                        console.log(obj)
+                        console.log(selectedCategory.value)
+                        return obj.some(category => category.id === selectedCategory.value)
+                    }
+                    );
+                }
+                
+                // Apply price sorting
+                if (sortBy.value) {
+                    filtered.sort((a, b) => {
+                        if (sortBy.value === 'low') {
+                            return a.price - b.price;
+                        } else {
+                            return b.price - a.price;
+                        }
+                    });
+                }
+                
+                return filtered;
+            });
 
             const getProducts = async () => {
                 try {
@@ -52,6 +91,17 @@
                 } catch (error) {
                     console.error('Error fetching products:', error);
                     products.value = [];
+                }
+            };
+
+            const getCategories = async () => {
+                try {
+                    const response = await fetch('/api/v1/categories');
+                    const data = await response.json();
+                    categories.value = data;
+                } catch (error) {
+                    console.error('Error fetching categories:', error);
+                    categories.value = [];
                 }
             };
 
@@ -69,11 +119,16 @@
 
             onMounted(() => {
                 getProducts();
+                getCategories();
             });
 
             return {
                 products,
                 isSidebarOpen,
+                selectedCategory,
+                sortBy,
+                categories,
+                filteredAndSortedProducts,
                 openSidebar,
                 closeSidebar,
                 handleProductCreated

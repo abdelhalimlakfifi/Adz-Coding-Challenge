@@ -1,7 +1,7 @@
 <template>
     <div class="product-card">
         <div class="product-image">
-            <img :src="product.image || 'https://placehold.co/600x400'" :alt="product.name">
+            <img :src="product.image_path ? '/storage/' + product.image_path : 'https://placehold.co/600x400'" :alt="product.name">
         </div>
         <div class="product-content">
             <h3>{{ product.name }}</h3>

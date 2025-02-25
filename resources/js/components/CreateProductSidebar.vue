@@ -9,20 +9,57 @@
                 <div class="sidebar-content">
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group">
-                            <label for="name">Product Name</label>
-                            <input type="text" id="name" v-model="form.name" required>
+                            <label for="name">Product Name *</label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                v-model="form.name" 
+                                required
+                                :class="{ 'error': errors.name }"
+                            >
+                            <span class="error-message" v-if="errors.name">{{ errors.name }}</span>
                         </div>
                         <div class="form-group">
-                            <label for="price">Price</label>
-                            <input type="number" id="price" v-model="form.price" step="0.01" required>
+                            <label for="price">Price *</label>
+                            <input 
+                                type="number" 
+                                id="price" 
+                                v-model="form.price" 
+                                step="0.01" 
+                                required
+                                :class="{ 'error': errors.price }"
+                            >
+                            <span class="error-message" v-if="errors.price">{{ errors.price }}</span>
                         </div>
                         <div class="form-group">
-                            <label for="category">Category</label>
-                            <input type="text" id="category" v-model="form.category">
+                            <label for="category">Categories *</label>
+                            <select 
+                                id="category" 
+                                v-model="form.categories" 
+                                multiple 
+                                class="multiselect"
+                                :class="{ 'error': errors.categories }"
+                                required
+                            >
+                                <option v-for="category in categories" :key="category.id" :value="category.id">
+                                    {{ category.name }}
+                                </option>
+                            </select>
+                            <span class="error-message" v-if="errors.categories">{{ errors.categories }}</span>
                         </div>
                         <div class="form-group">
                             <label for="description">Description</label>
                             <textarea id="description" v-model="form.description" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Product Image</label>
+                            <input 
+                                type="file" 
+                                id="image" 
+                                @change="handleImageChange" 
+                                accept="image/*"
+                                class="file-input"
+                            >
                         </div>
                         <button type="submit" class="submit-button">Create Product</button>
                     </form>
@@ -33,7 +70,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 export default {
     name: 'CreateProductSidebar',
@@ -45,36 +82,97 @@ export default {
     },
     emits: ['close', 'product-created'],
     setup(props, { emit }) {
+        const categories = ref([]);
         const form = ref({
             name: '',
             price: '',
-            category: '',
-            description: ''
+            categories: [],
+            description: '',
+            image: null
+        });
+        
+        const errors = ref({
+            name: '',
+            price: '',
+            categories: ''
+        });
+
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('/api/v1/categories');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                categories.value = await response.json();
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        onMounted(() => {
+            fetchCategories();
         });
 
         const close = () => {
             emit('close');
         };
 
+        const handleImageChange = (event) => {
+            form.value.image = event.target.files[0];
+        };
+
+        const validateForm = () => {
+            let isValid = true;
+            errors.value = {
+                name: '',
+                price: '',
+                categories: ''
+            };
+
+            if (!form.value.name.trim()) {
+                errors.value.name = 'Product name is required';
+                isValid = false;
+            }
+
+            if (!form.value.price || form.value.price <= 0) {
+                errors.value.price = 'Valid price is required';
+                isValid = false;
+            }
+
+            if (!form.value.categories.length) {
+                errors.value.categories = 'At least one category must be selected';
+                isValid = false;
+            }
+
+            return isValid;
+        };
+
         const handleSubmit = async () => {
-            console.log(form.value);
             try {
                 // Validate form data
-                if (!form.value.name || !form.value.price) {
-                    console.error('Required fields are missing');
+                if (!validateForm()) {
                     return;
                 }
+
+                // Create FormData object
+                const formData = new FormData();
+                formData.append('name', form.value.name);
+                formData.append('price', form.value.price);
+                formData.append('description', form.value.description);
+                if (form.value.image) {
+                    formData.append('image', form.value.image);
+                }
+                form.value.categories.forEach(categoryId => {
+                    formData.append('categories[]', categoryId);
+                });
 
                 // Make the API call
                 const response = await fetch('/api/v1/products', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        
-                        
                     },
-                    body: JSON.stringify(form.value)
+                    body: formData
                 });
 
                 if (!response.ok) {
@@ -90,8 +188,9 @@ export default {
                 form.value = {
                     name: '',
                     price: '',
-                    category: '',
-                    description: ''
+                    categories: [],
+                    description: '',
+                    image: null
                 };
                 
                 // Close the sidebar
@@ -104,8 +203,11 @@ export default {
 
         return {
             form,
+            categories,
+            errors,
             close,
-            handleSubmit
+            handleSubmit,
+            handleImageChange
         };
     }
 };
@@ -168,6 +270,11 @@ export default {
     color: #334155;  /* Modern slate */
     font-weight: 500;
     font-size: 0.875rem;
+}
+
+.form-group label::after {
+    content: " *";
+    color: #ef4444;
 }
 
 .form-group input,
@@ -239,5 +346,64 @@ export default {
 .sidebar-enter-to .sidebar,
 .sidebar-leave-from .sidebar {
     transform: translateX(0);
+}
+
+.multiselect {
+    min-height: 100px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.multiselect:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-color: #ffffff;
+}
+
+.multiselect option {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+.file-input {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.file-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-color: #ffffff;
+}
+
+.error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+.error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Remove asterisk for optional fields */
+.form-group label[for="description"]::after,
+.form-group label[for="image"]::after {
+    content: none;
 }
 </style> 

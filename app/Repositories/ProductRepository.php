@@ -9,8 +9,10 @@ class ProductRepository
     // Create a Product
     public function create(array $data)
     {
+        
         if (isset($data['categories'])) {
             $categories = $data['categories'];
+            // dd($categories);
             unset($data['categories']);
         }
         $product = Product::create($data);

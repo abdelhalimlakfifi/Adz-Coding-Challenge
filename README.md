@@ -21,6 +21,7 @@ npm install
 3. Set up your environment:
 cp .env.example .env
 php artisan key:generate
+php artisan storage:link   
 
 4. Open up `.env` and set your database info:
 DB_CONNECTION=mysql

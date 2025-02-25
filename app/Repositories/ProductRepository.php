@@ -48,5 +48,8 @@ class ProductRepository
         $product->delete();
     }
 
-
+    public function query()
+    {
+        return Product::with('categories')->newQuery();
+    }
 }

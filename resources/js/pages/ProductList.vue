@@ -40,6 +40,8 @@
     import { onMounted, ref, computed, watch } from 'vue';
     import ProductCard from '../components/ProductCard.vue';
     import CreateProductSidebar from '../components/CreateProductSidebar.vue';
+    import { fetchProducts } from '../services/product.service.js';
+    import { fetchCategories } from '../services/categories.service.js';
 
     export default {
         name: 'ProductList',
@@ -57,40 +59,11 @@
             const filteredAndSortedProducts = computed(() => products.value);
 
             const getProducts = async () => {
-                try {
-                    let url = '/api/v1/products';
-                    const params = new URLSearchParams();
-                    
-                    if (selectedCategory.value) {
-                        params.append('category', selectedCategory.value);
-                    }
-                    
-                    if (sortBy.value) {
-                        params.append('sort_price', sortBy.value === 'high' ? 'desc' : 'asc');
-                    }
-
-                    if (params.toString()) {
-                        url += `?${params.toString()}`;
-                    }
-
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    products.value = data;
-                } catch (error) {
-                    console.error('Error fetching products:', error);
-                    products.value = [];
-                }
+                products.value = await fetchProducts(selectedCategory.value, sortBy.value);
             };
 
             const getCategories = async () => {
-                try {
-                    const response = await fetch('/api/v1/categories');
-                    const data = await response.json();
-                    categories.value = data;
-                } catch (error) {
-                    console.error('Error fetching categories:', error);
-                    categories.value = [];
-                }
+                categories.value = await fetchCategories();
             };
 
             const openSidebar = () => {
@@ -102,7 +75,7 @@
             };
 
             const handleProductCreated = () => {
-                getProducts(); // Refresh the products list
+                getProducts();
             };
 
             // Add watchers for filter changes

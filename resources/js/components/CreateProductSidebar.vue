@@ -71,6 +71,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { createProduct } from '../services/product.service'; // Import the new function
 
 export default {
     name: 'CreateProductSidebar',
@@ -154,32 +155,17 @@ export default {
                     return;
                 }
 
-                // Create FormData object
-                const formData = new FormData();
-                formData.append('name', form.value.name);
-                formData.append('price', form.value.price);
-                formData.append('description', form.value.description);
-                if (form.value.image) {
-                    formData.append('image', form.value.image);
-                }
-                form.value.categories.forEach(categoryId => {
-                    formData.append('categories[]', categoryId);
-                });
+                // Prepare the form data object
+                const productData = {
+                    name: form.value.name,
+                    price: form.value.price,
+                    description: form.value.description,
+                    image: form.value.image,
+                    categories: form.value.categories
+                };
 
-                // Make the API call
-                const response = await fetch('/api/v1/products', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
+                // Make the API call using the new service function
+                const data = await createProduct(productData);
                 
                 // Emit the created product
                 emit('product-created', data);

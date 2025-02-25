@@ -1,35 +1,48 @@
 <template>
-    <div id="app">
-        <h1>Products</h1>
+    <div id="main">
+        <div class="header-container">
+            <h1>Products</h1>
+            <button class="add-product-button" @click="openSidebar">
+                Add Product
+            </button>
+        </div>
+        <div class="filters-container">
+            <select class="filter-select">
+                <option value="">Filter by Category</option>
+            </select>
+            <select class="filter-select">
+                <option value="">Sort by Price</option>
+            </select>
+        </div>
         <div class="products-grid">
-            <div v-for="product in products" :key="product.id" class="product-card">
-                <h3>{{ product.name }}</h3>
-                <p>{{ product.description }}</p>
-                <p class="price">€{{ product.price }}</p>
-                <div v-if="product.categories.length" class="categories">
-                    <span v-for="category in product.categories" 
-                          :key="category.id" 
-                          class="category-tag">
-                        {{ category.name }}
-                    </span>
-                </div>
-                <Button label="Add to Cart" />
-            </div>
+            <ProductCard 
+                v-for="product in products" 
+                :key="product.id" 
+                :product="product" 
+            />
         </div>
     </div>
+    <CreateProductSidebar 
+        :is-open="isSidebarOpen" 
+        @close="closeSidebar"
+        @product-created="handleProductCreated"
+    />
 </template>
 
 <script>
-    import Button from 'primevue/button';
     import { onMounted, ref } from 'vue';
+    import ProductCard from '../components/ProductCard.vue';
+    import CreateProductSidebar from '../components/CreateProductSidebar.vue';
 
     export default {
         name: 'ProductList',
         components: {
-            Button
+            ProductCard,
+            CreateProductSidebar
         },
         setup() {
             const products = ref([]);
+            const isSidebarOpen = ref(false);
 
             const getProducts = async () => {
                 try {
@@ -42,48 +55,139 @@
                 }
             };
 
+            const openSidebar = () => {
+                isSidebarOpen.value = true;
+            };
+
+            const closeSidebar = () => {
+                isSidebarOpen.value = false;
+            };
+
+            const handleProductCreated = () => {
+                getProducts(); // Refresh the products list
+            };
+
             onMounted(() => {
                 getProducts();
             });
 
             return {
-                products
+                products,
+                isSidebarOpen,
+                openSidebar,
+                closeSidebar,
+                handleProductCreated
             };
         }
     };
 </script>
 
 <style scoped>
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 2rem;
-    padding: 1rem;
-}
+    #main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
 
-.product-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1rem;
-    text-align: center;
-}
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+    }
 
-.price {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #2c3e50;
-}
+    h1::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background-color: #3498db;
+        border-radius: 2px;
+    }
 
-.categories {
-    margin: 0.5rem 0;
-}
+    .filters-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        justify-content: flex-end;
+    }
 
-.category-tag {
-    background-color: #e9ecef;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    margin: 0.25rem;
-    display: inline-block;
-    font-size: 0.875rem;
-}
+    .filter-select {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background-color: white;
+        color: #4a5568;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 150px;
+    }
+
+    .filter-select:hover {
+        border-color: #3498db;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .add-product-button {
+        padding: 0.75rem 1.5rem;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: background-color 0.2s ease;
+    }
+
+    .add-product-button:hover {
+        background-color: #2980b9;
+    }
+
+    @media (max-width: 768px) {
+        #main {
+            padding: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        .filters-container {
+            flex-direction: column;
+        }
+
+        .filter-select {
+            width: 100%;
+        }
+
+        .header-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
 </style>

@@ -1,0 +1,243 @@
+<template>
+    <Transition name="sidebar">
+        <div class="sidebar-overlay" v-if="isOpen" @click.self="close">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Add New Product</h2>
+                    <button class="close-button" @click="close">&times;</button>
+                </div>
+                <div class="sidebar-content">
+                    <form @submit.prevent="handleSubmit">
+                        <div class="form-group">
+                            <label for="name">Product Name</label>
+                            <input type="text" id="name" v-model="form.name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="number" id="price" v-model="form.price" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <input type="text" id="category" v-model="form.category">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" v-model="form.description" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="submit-button">Create Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </Transition>
+</template>
+
+<script>
+import { ref } from 'vue';
+
+export default {
+    name: 'CreateProductSidebar',
+    props: {
+        isOpen: {
+            type: Boolean,
+            required: true
+        }
+    },
+    emits: ['close', 'product-created'],
+    setup(props, { emit }) {
+        const form = ref({
+            name: '',
+            price: '',
+            category: '',
+            description: ''
+        });
+
+        const close = () => {
+            emit('close');
+        };
+
+        const handleSubmit = async () => {
+            console.log(form.value);
+            try {
+                // Validate form data
+                if (!form.value.name || !form.value.price) {
+                    console.error('Required fields are missing');
+                    return;
+                }
+
+                // Make the API call
+                const response = await fetch('/api/v1/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        
+                        
+                    },
+                    body: JSON.stringify(form.value)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Emit the created product
+                emit('product-created', data);
+                
+                // Reset form
+                form.value = {
+                    name: '',
+                    price: '',
+                    category: '',
+                    description: ''
+                };
+                
+                // Close the sidebar
+                close();
+            } catch (error) {
+                console.error('Error creating product:', error);
+                // Here you might want to add error handling UI feedback
+            }
+        };
+
+        return {
+            form,
+            close,
+            handleSubmit
+        };
+    }
+};
+</script>
+
+<style scoped>
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(15, 23, 42, 0.3);  /* Modern semi-transparent overlay */
+    backdrop-filter: blur(4px);  /* Modern blur effect */
+    display: flex;
+    justify-content: flex-end;
+    z-index: 1000;
+}
+
+.sidebar {
+    width: 400px;
+    background-color: #ffffff;
+    height: 100%;
+    padding: 2rem;
+    box-shadow: -8px 0 25px -10px rgba(0, 0, 0, 0.15);  /* Softer, modern shadow */
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.sidebar-header h2 {
+    font-weight: 600;
+    color: #0f172a;  /* Modern slate color */
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #64748b;  /* Modern slate gray */
+    transition: color 0.2s ease;
+}
+
+.close-button:hover {
+    color: #0f172a;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #334155;  /* Modern slate */
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid #e2e8f0;  /* Modern border color */
+    border-radius: 0.5rem;
+    background-color: #f8fafc;  /* Light background */
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;  /* Modern blue */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);  /* Subtle focus ring */
+    background-color: #ffffff;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #3b82f6;  /* Modern blue */
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.submit-button:hover {
+    background-color: #2563eb;  /* Darker blue on hover */
+    transform: translateY(-1px);  /* Subtle lift effect */
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+/* Animation styles */
+.sidebar-enter-active,
+.sidebar-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-enter-active .sidebar,
+.sidebar-leave-active .sidebar {
+    transition: transform 0.3s ease;
+}
+
+.sidebar-enter-from,
+.sidebar-leave-to {
+    opacity: 0;
+}
+
+.sidebar-enter-from .sidebar,
+.sidebar-leave-to .sidebar {
+    transform: translateX(100%);
+}
+
+.sidebar-enter-to,
+.sidebar-leave-from {
+    opacity: 1;
+}
+
+.sidebar-enter-to .sidebar,
+.sidebar-leave-from .sidebar {
+    transform: translateX(0);
+}
+</style> 

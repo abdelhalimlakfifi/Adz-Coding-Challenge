@@ -9,17 +9,7 @@ class ProductRepository
     // Create a Product
     public function create(array $data)
     {
-        
-        if (isset($data['categories'])) {
-            $categories = $data['categories'];
-            // dd($categories);
-            unset($data['categories']);
-        }
         $product = Product::create($data);
-        
-        if (isset($categories)) {
-            $product->categories()->attach($categories);
-        }
         return $product;
     }
     
@@ -48,6 +38,25 @@ class ProductRepository
     {
         $product = Product::findOrFail($id);
         $product->delete();
+    }
+
+    // Get all Products with filters
+    public function getAllWithFilters(array $filters = [])
+    {
+        $query = Product::with('categories');
+        
+        // Apply filters if provided
+        if (isset($filters['category'])) {
+            $query->whereHas('categories', function($q) use ($filters) {
+                $q->where('categories.id', $filters['category']);
+            });
+        }
+        
+        if (isset($filters['sort_price'])) {
+            $query->orderBy('price', $filters['sort_price']);
+        }
+
+        return $query->get();
     }
 
     public function query()

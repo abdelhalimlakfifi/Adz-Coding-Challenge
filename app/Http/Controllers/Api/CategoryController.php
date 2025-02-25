@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\CategoryRepository;
-
+use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller
 {
@@ -16,8 +16,9 @@ class CategoryController extends Controller
         $this->categoryRepository = $categoryRepository;
     }
 
-    public function getAll()
+    public function getAll(): JsonResponse
     {
-        return $this->categoryRepository->all();
+        $categories = $this->categoryRepository->all();
+        return response()->json($categories);
     }
 }

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ProductRepository;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductService
 {
@@ -14,12 +17,12 @@ class ProductService
         $this->productRepository = $productRepository;
     }
 
-    public function getAllWithFilters(array $filters)
+    public function getAllWithFilters(array $filters): Collection
     {
         return $this->productRepository->getAllWithFilters($filters);
     }
 
-    public function createProduct(array $data)
+    public function createProduct(array $data): Product
     {
         if (isset($data['image'])) {
             $data['image_path'] = $this->handleImageUpload($data['image']);
@@ -28,7 +31,7 @@ class ProductService
         return $this->productRepository->create($data);
     }
 
-    private function handleImageUpload($image)
+    private function handleImageUpload(UploadedFile $image): string
     {
         return $image->store('products', 'public');
     }

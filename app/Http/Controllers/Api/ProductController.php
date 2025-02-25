@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 // use App\Models\Product;
 use App\Services\ProductService;
 
@@ -16,14 +17,14 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function getAll(Request $request)
+    public function getAll(Request $request): JsonResponse
     {
         $filters = $request->all();
         $products = $this->productService->getAllWithFilters($filters);
         return response()->json($products);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',

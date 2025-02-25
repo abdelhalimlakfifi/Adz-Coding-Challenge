@@ -5,24 +5,21 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 // use App\Models\Product;
-use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 
 class ProductController extends Controller
 {
-    protected $productRepository;
     protected $productService;
 
-    public function __construct(ProductRepository $productRepository, ProductService $productService)
+    public function __construct(ProductService $productService)
     {
-        $this->productRepository = $productRepository;
         $this->productService = $productService;
     }
 
     public function getAll(Request $request)
     {
         $filters = $request->all();
-        $products = $this->productRepository->getAllWithFilters($filters);
+        $products = $this->productService->getAllWithFilters($filters);
         return response()->json($products);
     }
 

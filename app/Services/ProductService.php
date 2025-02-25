@@ -14,6 +14,11 @@ class ProductService
         $this->productRepository = $productRepository;
     }
 
+    public function getAllWithFilters(array $filters)
+    {
+        return $this->productRepository->getAllWithFilters($filters);
+    }
+
     public function createProduct(array $data)
     {
         if (isset($data['image'])) {

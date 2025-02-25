@@ -22,7 +22,9 @@ class ProductController extends Controller
 
         // Filter by category if provided
         if ($request->has('category')) {
-            $query = $query->where('category_id', $request->category);
+            $query = $query->whereHas('categories', function($q) use ($request) {
+                $q->where('categories.id', $request->category);
+            });
         }
 
         // Sort by price if provided (asc or desc)
@@ -49,6 +51,6 @@ class ProductController extends Controller
         }
         
         $product = $this->productRepository->create($data);
-        return response()->json($product);
+        return response()->json($product, 201);
     }
 }

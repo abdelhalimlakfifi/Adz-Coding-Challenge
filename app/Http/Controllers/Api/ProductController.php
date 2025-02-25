@@ -16,9 +16,37 @@ class ProductController extends Controller
         $this->productRepository = $productRepository;
     }
 
-    public function getAll()
+    public function getAll(Request $request)
     {
-        $products = $this->productRepository->all();
+        $query = $this->productRepository->query();
+
+        // Filter by category if provided
+        if ($request->has('category')) {
+            $query = $query->where('category_id', $request->category);
+        }
+
+        // Sort by price if provided (asc or desc)
+        if ($request->has('sort_price')) {
+            $direction = strtolower($request->sort_price) === 'desc' ? 'desc' : 'asc';
+            $query = $query->orderBy('price', $direction);
+        }
+
+        $products = $query->get();
         return response()->json($products);
+    }
+
+    public function create(Request $request)
+    {
+        $data = $request->all();
+        
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            
+            $path = $image->store('products', 'public');
+            $data['image_path'] = $path;
+        }
+        
+        $product = $this->productRepository->create($data);
+        return response()->json($product);
     }
 }

@@ -21,22 +21,8 @@ class ProductController extends Controller
 
     public function getAll(Request $request)
     {
-        $query = $this->productRepository->query();
-
-        // Filter by category if provided
-        if ($request->has('category')) {
-            $query = $query->whereHas('categories', function($q) use ($request) {
-                $q->where('categories.id', $request->category);
-            });
-        }
-
-        // Sort by price if provided (asc or desc)
-        if ($request->has('sort_price')) {
-            $direction = strtolower($request->sort_price) === 'desc' ? 'desc' : 'asc';
-            $query = $query->orderBy('price', $direction);
-        }
-
-        $products = $query->get();
+        $filters = $request->all();
+        $products = $this->productRepository->getAllWithFilters($filters);
         return response()->json($products);
     }
 
@@ -50,8 +36,9 @@ class ProductController extends Controller
             'categories' => 'required|array'
         ]);
 
-        $product = $this->productService->createProduct($validated);
         
+        $product = $this->productService->createProduct($validated);
+        $product->categories()->attach($validated['categories']);
         return response()->json($product, 201);
     }
 }

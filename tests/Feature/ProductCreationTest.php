@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+
 use Tests\TestCase;
 
 class ProductCreationTest extends TestCase
@@ -14,21 +16,19 @@ class ProductCreationTest extends TestCase
     /** @test */
     public function it_can_create_a_product()
     {
-        // Simulate a file for testing (if applicable)
-        // $file = UploadedFile::fake()->image('product_image.jpg');
+        // Create a category first
+        $category = Category::factory()->create();
 
         // Define the product data
         $data = [
             'name' => 'New Product',
             'price' => 29.99,
-            // 'category' => 'Electronics', // Or an array if it's a relationship
+            'category_id' => $category->id,
             'description' => 'A brand new product.',
         ];
 
-        // Simulate a POST request with form data
-        $response = $this->postJson('/api/v1/products', $data, [
-            'Content-Type' => 'multipart/form-data'
-        ]);
+        // Simulate a POST request
+        $response = $this->postJson('/api/v1/products', $data);
 
         // Assert that the response is successful
         $response->assertStatus(201);
@@ -37,7 +37,7 @@ class ProductCreationTest extends TestCase
         $this->assertDatabaseHas('products', [
             'name' => 'New Product',
             'price' => 29.99,
-            'category' => 'Electronics', // Adjust if it's a relationship
+            'category_id' => $category->id,  // Check for category_id instead of category
             'description' => 'A brand new product.',
         ]);
     }

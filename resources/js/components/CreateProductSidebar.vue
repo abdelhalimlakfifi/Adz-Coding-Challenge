@@ -72,6 +72,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { createProduct } from '../services/product.service'; // Import the new function
+import { fetchCategories } from '../services/categories.service'; // Import fetchCategories
 
 export default {
     name: 'CreateProductSidebar',
@@ -98,20 +99,17 @@ export default {
             categories: ''
         });
 
-        const fetchCategories = async () => {
+        const getCategories = async () => {
             try {
-                const response = await fetch('/api/v1/categories');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                categories.value = await response.json();
+                categories.value = await fetchCategories(); // Use the imported function
+                console.log(categories.value);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         };
 
         onMounted(() => {
-            fetchCategories();
+            getCategories();
         });
 
         const close = () => {

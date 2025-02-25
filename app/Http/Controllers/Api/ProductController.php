@@ -37,6 +37,8 @@ class ProductController extends Controller
 
     public function create(Request $request)
     {
+        
+        
         $data = $request->all();
         
         if ($request->hasFile('image')) {

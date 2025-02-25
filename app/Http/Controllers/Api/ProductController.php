@@ -6,14 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 // use App\Models\Product;
 use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 
 class ProductController extends Controller
 {
     protected $productRepository;
+    protected $productService;
 
-    public function __construct(ProductRepository $productRepository)
+    public function __construct(ProductRepository $productRepository, ProductService $productService)
     {
         $this->productRepository = $productRepository;
+        $this->productService = $productService;
     }
 
     public function getAll(Request $request)
@@ -39,18 +42,16 @@ class ProductController extends Controller
 
     public function create(Request $request)
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048',
+            'categories' => 'required|array'
+        ]);
+
+        $product = $this->productService->createProduct($validated);
         
-        
-        $data = $request->all();
-        
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            
-            $path = $image->store('products', 'public');
-            $data['image_path'] = $path;
-        }
-        
-        $product = $this->productRepository->create($data);
         return response()->json($product, 201);
     }
 }

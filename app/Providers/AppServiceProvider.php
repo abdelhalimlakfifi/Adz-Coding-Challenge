@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ProductRepository;
+use App\Services\ProductService;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -16,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(CategoryRepository::class, CategoryRepository::class);
         $this->app->bind(ProductRepository::class, ProductRepository::class);
+        $this->app->bind(ProductService::class, ProductService::class);
     }
 
     /**

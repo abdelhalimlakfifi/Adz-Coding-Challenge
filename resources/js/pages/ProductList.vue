@@ -37,7 +37,7 @@
 </template>
 
 <script>
-    import { onMounted, ref, computed } from 'vue';
+    import { onMounted, ref, computed, watch } from 'vue';
     import ProductCard from '../components/ProductCard.vue';
     import CreateProductSidebar from '../components/CreateProductSidebar.vue';
 
@@ -54,38 +54,26 @@
             const sortBy = ref('');
             const categories = ref([]);
 
-            const filteredAndSortedProducts = computed(() => {
-                let filtered = [...products.value];
-                
-                // Apply category filter
-                if (selectedCategory.value) {
-                    filtered = filtered.filter(product => {
-                        // console.log(JSON.stringify(product.categories));
-                        const obj = JSON.parse(JSON.stringify(product.categories));
-                        console.log(obj)
-                        console.log(selectedCategory.value)
-                        return obj.some(category => category.id === selectedCategory.value)
-                    }
-                    );
-                }
-                
-                // Apply price sorting
-                if (sortBy.value) {
-                    filtered.sort((a, b) => {
-                        if (sortBy.value === 'low') {
-                            return a.price - b.price;
-                        } else {
-                            return b.price - a.price;
-                        }
-                    });
-                }
-                
-                return filtered;
-            });
+            const filteredAndSortedProducts = computed(() => products.value);
 
             const getProducts = async () => {
                 try {
-                    const response = await fetch('/api/v1/products');
+                    let url = '/api/v1/products';
+                    const params = new URLSearchParams();
+                    
+                    if (selectedCategory.value) {
+                        params.append('category', selectedCategory.value);
+                    }
+                    
+                    if (sortBy.value) {
+                        params.append('sort_price', sortBy.value === 'high' ? 'desc' : 'asc');
+                    }
+
+                    if (params.toString()) {
+                        url += `?${params.toString()}`;
+                    }
+
+                    const response = await fetch(url);
                     const data = await response.json();
                     products.value = data;
                 } catch (error) {
@@ -116,6 +104,11 @@
             const handleProductCreated = () => {
                 getProducts(); // Refresh the products list
             };
+
+            // Add watchers for filter changes
+            watch([selectedCategory, sortBy], () => {
+                getProducts();
+            });
 
             onMounted(() => {
                 getProducts();

@@ -102,7 +102,6 @@ export default {
         const getCategories = async () => {
             try {
                 categories.value = await fetchCategories(); // Use the imported function
-                console.log(categories.value);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }

@@ -27212,7 +27212,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             case 3:
               categories.value = _context.sent;
               // Use the imported function
-              console.log(categories.value);
               _context.next = 10;
               break;
             case 7:
@@ -33183,7 +33182,6 @@ var fetchCategories = /*#__PURE__*/function () {
           return fetch('/api/v1/categories');
         case 3:
           response = _context.sent;
-          console.log(response);
           _context.next = 7;
           return response.json();
         case 7:
